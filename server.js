@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const app = express();
 const User = require('./userModel');
 
-app.use(express.json()); 
+app.use(express.json());
 
 
 // Get all users
@@ -87,7 +87,7 @@ app.post('/users', async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 });
-
+ 
 // Delete user by ID
 
 
