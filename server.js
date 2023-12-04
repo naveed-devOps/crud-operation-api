@@ -5,227 +5,245 @@ const User = require('./userModel');
 
 app.use(express.json());
 
-// Get all customers
+
+// Get all users
 
 
-app.get('/customers', async (req, res) => {
+app.get('/users', async (req, res) => {
     try {
-        const customers = await User.find({});
-        res.status(200).json(customers);
+        const users = await User.find({});
+        res.status(200).json(users);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 });
 
-// Get customer by ID
+// Get user by ID
 
 
-app.get('/customers/id/:customerId', async (req, res) => {
-    const customerId = req.params.customerId;
+app.get('/users/id/:userId', async (req, res) => {
+    const userId = req.params.userId;
 
-    console.log(customerId)
+    console.log(userId)
     try {
-        const customer = await User.find({ id: customerId });
-        if (!customer) {
-            return res.status(404).json({ message: 'Customer not found' });
+        const user = await User.find({ id: userId });
+        if (!user) {
+            return res.status(404).json({ message: 'user not found' });
         }
-        res.status(200).json(customer);
+        res.status(200).json(user);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 });
 
 
-//get customer by name
+//get user by name
 
 
-app.get('/customers/name/:customerName', async (req, res) => {
-    const customerName = req.params.customerName;
+app.get('/users/name/:userName', async (req, res) => {
+    const userName = req.params.userName;
 
-    console.log(customerName)
+    console.log(userName)
     try {
-        const customers = await User.find({ name: customerName });
-        if (customers.length === 0) {
-            return res.status(404).json({ message: 'Customer not found' });
+        const users = await User.find({ name: userName });
+        if (users.length === 0) {
+            return res.status(404).json({ message: 'User not found' });
         }
-        res.status(200).json(customers);
+        res.status(200).json(users);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 });
 
 
-//get customer by age
+//get user by age
 
 
-app.get('/customers/age/:customerAge', async (req, res) => {
-    const customerAge = req.params.customerAge;
+app.get('/users/age/:userAge', async (req, res) => {
+    const userAge = req.params.userAge;
 
-    console.log(customerAge)
+    console.log(userAge)
     try {
-        const customers = await User.find({ age: customerAge });
-        if (customers.length === 0) {
-            return res.status(404).json({ message: 'Customer not found' });
+        const users = await User.find({ age: userAge });
+        if (users.length === 0) {
+            return res.status(404).json({ message: 'User not found' });
         }
-        res.status(200).json(customers);
+        res.status(200).json(users);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 });
 
 
-// Create a new customer
+// Create a new user
 
 
-app.post('/customers', async (req, res) => {
+app.post('/users', async (req, res) => {
     try {
-        const customer = await User.create(req.body);
-        res.status(201).json(customer);
+        const user = await User.create(req.body);
+        res.status(201).json(user);
     } catch (error) {
         console.error(error.message);
         res.status(500).json({ message: error.message });
     }
 });
 
-// Delete customer by ID
+// Delete user by ID
 
 
-app.delete('/customers/dlt-id/:customerId', async (req, res) => {
-    const customerId = req.params.customerId;
+app.delete('/users/dlt-id/:userId', async (req, res) => {
+    const userId = req.params.userId;
 
     try {
-        const deletedCustomer = await User.findOneAndDelete({ id: customerId });
+        const deletedUser = await User.findOneAndDelete({ id: userId });
 
-        if (!deletedCustomer) {
-            return res.status(404).json({ message: 'Customer not found' });
+        if (!deletedUser) {
+            return res.status(404).json({ message: 'User not found' });
         }
 
-        res.status(200).json({ message: 'Customer deleted successfully', deletedCustomer });
+        res.status(200).json({ message: 'User deleted successfully', deletedUser });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 });
 
 
-// Delete customer by name
+// Delete user by name
 
 
-app.delete('/customers/dlt-name/:customerName', async (req, res) => {
-    const customerName = req.params.customerName;
+app.delete('/users/name/:userName', async (req, res) => {
+    const userName = req.params.userName;
 
     try {
-        const deletedCustomer = await Customer.findOneAndDelete({ name: customerName });
+        const deletedUser = await User.findOneAndDelete({ name: userName });
 
-        if (!deletedCustomer) {
-            return res.status(404).json({ message: 'Customer not found' });
+        if (!deletedUser) {
+            return res.status(404).json({ message: 'User not found' });
         }
 
-        res.status(200).json({ message: 'Customer deleted successfully', deletedCustomer });
+        res.status(200).json({ message: 'User deleted successfully', deletedUser });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 });
 
-// Delete customer by age
+// Delete user by age
 
 
-app.delete('/customers/dlt-age/:customerAge', async (req, res) => {
-    const customerAge = req.params.customerAge;
+app.delete('/users/age/:userAge', async (req, res) => {
+    const userAge = req.params.userAge;
 
     try {
-        const deletedCustomer = await Customer.findOneAndDelete({ age: customerAge });
+        const deletedUser = await User.findOneAndDelete({ age: userAge });
 
-        if (!deletedCustomer) {
-            return res.status(404).json({ message: 'Customer not found' });
+        if (!deletedUser) {
+            return res.status(404).json({ message: 'User not found' });
         }
 
-        res.status(200).json({ message: 'Customer deleted successfully', deletedCustomer });
+        res.status(200).json({ message: 'User deleted successfully', deletedUser });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 });
 
 
-// Update customer by ID
+// Update user by ID
 
 
-app.put('/customers/up-id/:customerId', async (req, res) => {
-    const customerId = req.params.customerId;
-
-    try {
-        // Find the existing customer by ID
-        const existingCustomer = await Customer.findOne({ id: customerId });
-
-        if (!existingCustomer) {
-            return res.status(404).json({ message: 'Customer not found' });
-        }
-
-        // Update the existing customer with the new data
-        Object.assign(existingCustomer, req.body);
-
-        // Save the updated customer to the database
-        const updatedCustomer = await existingCustomer.save();
-
-        res.status(200).json(updatedCustomer);
-    } catch (error) {
-        res.status(500).json({ message: 'Error updating customer', error: error.message });
-    }
-});
-
-
-// Update customer by name
-
-
-app.put('/customers/up-name/:customerName', async (req, res) => {
-    const customerName = req.params.customerName;
+app.put('/users/id/:userId', async (req, res) => {
+    const userId = req.params.userId;
 
     try {
-        // Find the existing customer by ID
-        const existingCustomer = await Customer.findOne({ name: customerName });
+        // Find the existing user by ID and update with the new data
+        const updatedUser = await User.findOneAndUpdate(
+            { id: userId },
+            req.body,
+            { new: true, runValidators: true }
+        );
 
-        if (!existingCustomer) {
-            return res.status(404).json({ message: 'Customer not found' });
+        if (!updatedUser) {
+            return res.status(404).json({ message: 'User not found' });
         }
 
-        // Update the existing customer with the new data
-        Object.assign(existingCustomer, req.body);
-
-        // Save the updated customer to the database
-        const updatedCustomer = await existingCustomer.save();
-
-        res.status(200).json(updatedCustomer);
+        res.status(200).json(updatedUser);
     } catch (error) {
-        res.status(500).json({ message: 'Error updating customer', error: error.message });
+        res.status(500).json({ message: 'Error updating user', error: error.message });
     }
 });
 
 
 
-// Update customer by age
+// Update user by name
+ 
 
-
-app.put('/customers/age/:customerAge', async (req, res) => {
-    const customerAge = req.params.customerAge;
+app.put('/users/name/:userName', async (req, res) => {
+    const userName = req.params.userName;
 
     try {
-        // Find the existing customer by age
-        const existingCustomer = await Customer.findOne({ age: customerAge });
+        // Find the existing user by name
+        const existingUser = await User.findOneAndUpdate(
+            { name: userName },
+            req.body,
+            { new: true, runValidators: true }
+        );
 
-        if (!existingCustomer) {
-            return res.status(404).json({ message: 'Customer not found' });
+        if (!existingUser) {
+            return res.status(404).json({ message: 'User not found' });
         }
 
-        // Update the existing customer with the new data
-        Object.assign(existingCustomer, req.body);
+        // Check if request body is empty or undefined
+        if (!req.body || Object.keys(req.body).length === 0) {
+            return res.status(400).json({ message: 'Request body is empty or missing required fields' });
+        }
 
-        // Save the updated customer to the database
-        const updatedCustomer = await existingCustomer.save();
+        // Update the existing user with the new data
+        Object.assign(existingUser, req.body);
 
-        res.status(200).json(updatedCustomer);
+        // Save the updated user to the database
+        const updatedUser = await existingUser.save();
+
+        res.status(200).json(updatedUser);
     } catch (error) {
-        res.status(500).json({ message: 'Error updating customer', error: error.message });
+        res.status(500).json({ message: 'Error updating user', error: error.message });
     }
 });
+
+
+
+// Update user by age
+
+app.put('/users/age/:userAge', async (req, res) => {
+    const userAge = req.params.userAge;
+
+    try {
+        // Find the existing user by name
+        const existingUser = await User.findOneAndUpdate(
+            { age: userAge },
+            req.body,
+            { new: true, runValidators: true }
+        );
+
+        if (!existingUser) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Check if request body is empty or undefined
+        if (!req.body || Object.keys(req.body).length === 0) {
+            return res.status(400).json({ message: 'Request body is empty or missing required fields' });
+        }
+
+        // Update the existing user with the new data
+        Object.assign(existingUser, req.body);
+
+        // Save the updated user to the database
+        const updatedUser = await existingUser.save();
+
+        res.status(200).json(updatedUser);
+    } catch (error) {
+        res.status(500).json({ message: 'Error updating user', error: error.message });
+    }
+});
+
 
 
 // MongoDB connection
