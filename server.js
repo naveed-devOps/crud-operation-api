@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const app = express();
 const User = require('./userModel');
 
-app.use(express.json());
+app.use(express.json()); 
 
 
 // Get all users

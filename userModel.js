@@ -13,7 +13,17 @@ const userModel = mongoose.Schema({
     id: {
         type:Number,
         require:[true,"please enter your id"]
+    },
+    email: {
+        type:String,
+        require:[true,"please enter your email"]
+    },
+    password: {
+        type:String,
+        require:[true,"please enter your password"]
     }
+
+
 
 })
 
