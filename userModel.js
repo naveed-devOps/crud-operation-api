@@ -1,32 +1,57 @@
- 
-const mongoose = require ('mongoose');
+const mongoose = require('mongoose');
+const bcrypt = require('bcrypt');
+
 const userModel = mongoose.Schema({
     name: {
         type: String,
-        require:[true,"please enter your name"]
+        required: [true, "please enter your name"]
     },
     age: {
-        type:Number,
-        require:[true, "please enter your age"]
-
+        type: Number,
+        required: [true, "please enter your age"]
     },
     id: {
-        type:Number,
-        require:[true,"please enter your id"]
+        type: Number,
+        required: [true, "please enter your id"]
     },
     email: {
-        type:String,
-        require:[true,"please enter your email"]
+        type: String,
+        required: [true, "please enter your email"]
     },
     password: {
-        type:String,
-        require:[true,"please enter your password"]
+        type: String,
+        required: [true, "please enter your password"],
+        validate: {
+            validator: function (value) {
+                // Ensure the password meets the specified requirements
+                // At least one symbol, one uppercase letter, one number, and a minimum length of 8 characters
+                const passwordRegex = /^(?=.*[!@#$%^&*])(?=.*[A-Z])(?=.*[0-9]).{8,}$/;
+                return passwordRegex.test(value);
+            },
+            message: props => `${props.value} does not meet the password requirements!`
+        }
     }
+});
 
+// Hash the password before saving to the database
+userModel.pre('save', async function (next) {
+    try {
+        if (!this.isModified('password')) {
+            return next();
+        }
 
+        // Ensure the password starts with #
+        if (!this.password.startsWith('#')) {
+            this.password = '#' + this.password;
+        }
 
-})
+        const hashedPassword = await bcrypt.hash(this.password, 10);
+        this.password = hashedPassword;
+        next();
+    } catch (error) {
+        next(error);
+    }
+});
 
-
-const user = mongoose.model('user',userModel);
-module.exports = user;
+const User = mongoose.model('user', userModel);
+module.exports = User;
