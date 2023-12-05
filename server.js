@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const app = express();
 const User = require('./userModel');
+const bcrypt = require('bcrypt');
 
 app.use(express.json());
 
@@ -36,7 +37,7 @@ app.get('/users/id/:userId', async (req, res) => {
     }
 });
 
-
+ 
 //get user by name
 
 
@@ -91,7 +92,7 @@ app.post('/users', async (req, res) => {
 // Delete user by ID
 
 
-app.delete('/users/dlt-id/:userId', async (req, res) => {
+app.delete('/users/id/:userId', async (req, res) => {
     const userId = req.params.userId;
 
     try {
@@ -241,6 +242,41 @@ app.put('/users/age/:userAge', async (req, res) => {
         res.status(200).json(updatedUser);
     } catch (error) {
         res.status(500).json({ message: 'Error updating user', error: error.message });
+    }
+});
+
+
+  // Login endpoint
+
+ 
+app.post('/login', async (req, res) => {
+    const { email, password } = req.body;
+
+    try {
+        // Find the user by email
+        const user = await User.findOne({ email });
+
+        // Check if the user exists
+        if (!user) {
+            console.log('User not found');
+            return res.status(401).json({ message: 'Invalid email or password' });
+        }
+
+        // Compare the provided password with the hashed password in the database
+        const isPasswordMatch = await bcrypt.compare(password, user.password);
+
+        // Check if the passwords match
+        if (!isPasswordMatch) {
+            console.log('Passwords do not match');
+            return res.status(401).json({ message: 'Invalid email or password' });
+        }
+ 
+        // Passwords match, respond with a success message
+      //  console.log('Login successful');
+        res.status(200).json({ message: '✌️👏Login successful👏✌️' });
+    } catch (error) {
+        console.error(error); // Log the error to the console
+        res.status(500).json({ message: 'Internal server error' });
     }
 });
 
