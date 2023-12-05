@@ -261,7 +261,7 @@ app.post('/login', async (req, res) => {
             console.log('User not found');
             return res.status(401).json({ message: 'Invalid email or password' });
         }
-
+        
         // Compare the provided password with the hashed password in the database
         const isPasswordMatch = await bcrypt.compare(password, user.password);
 
