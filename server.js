@@ -12,7 +12,7 @@ app.use(express.json());
 
 const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com', 
-    port: 587,
+    port: 25,
     secure: false,
     auth: {
       user: 'naveed65dev@gmail.com',
