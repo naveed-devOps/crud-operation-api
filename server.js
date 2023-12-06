@@ -3,9 +3,23 @@ const mongoose = require('mongoose');
 const app = express();
 const User = require('./userModel');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');  
+const nodemailer = require('nodemailer');
+ 
 
 app.use(express.json());
+ 
 
+const transporter = nodemailer.createTransport({
+    host: 'smtp.gmail.com', 
+    port: 587,
+    secure: false,
+    auth: {
+      user: 'naveed65dev@gmail.com',
+      pass: 'fxpm tzje yomq mffa',
+    },
+  });
+ 
 
 // Get all users
 
@@ -273,7 +287,7 @@ app.post('/login', async (req, res) => {
  
         // Passwords match, respond with a success message
       //  console.log('Login successful');
-        res.status(200).json({ message: '✌️👏Login successful👏✌️' });
+        res.status(200).json({ message: '👏✌️Login successful👏✌️' });
     } catch (error) {
         console.error(error); // Log the error to the console
         res.status(500).json({ message: 'Internal server error' });
@@ -281,12 +295,108 @@ app.post('/login', async (req, res) => {
 });
 
 
+// Function to generate a random OTP
+function generateOTP() {
+    const length = 6;
+    const characters = '0123456789';
+    let OTP = '';
+    for (let i = 0; i < length; i++) {
+        OTP += characters[Math.floor(Math.random() * characters.length)];
+    }
+    return OTP;
+}
 
-// MongoDB connection
+ 
+// Generate and send OTP to user's email
+
+
+app.post('/generate-otp', async (req, res) => {
+    const { email } = req.body;
+
+    try {
+        const user = await User.findOne({ email });
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Generate OTP
+        const otp = generateOTP();
+
+        // Store OTP and its expiration time in the user document
+        user.resetToken = otp;
+        user.resetTokenExpiration = Date.now() + 600000; // OTP expires in 10 minutes
+        await user.save();
+
+        // Log the generated OTP (for debugging purposes)
+        console.log('Generated OTP:', otp);
+
+        // Send OTP to user's email
+        const mailOptions = {
+            from: 'naveed65dev@gmail.com',
+            to: email,
+            subject: 'Reset Password OTP',
+            text: `Your OTP for password reset is: ${otp}. It will expire in 10 minutes.`,
+        };
+
+        transporter.sendMail(mailOptions, (error, info) => {
+            if (error) {
+                console.error('Error sending email:', error);
+                
+                res.status(500).json({ message: 'Error sending OTP email' });
+            } else {
+                console.log('Email sent:', info.response);
+                res.status(200).json({ message: 'OTP sent successfully' });
+            }
+        });
+    } catch (error) {
+        console.error('Error generating OTP:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+
+
+  // Reset password using OTP
+
+
+app.post('/reset-password', async (req, res) => {
+    const { email, otp, newPassword } = req.body;
+
+    try {
+        const user = await User.findOne({ email });
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Check if the provided OTP matches the stored OTP and has not expired
+        if (user.resetToken !== otp || Date.now() > user.resetTokenExpiration) {
+            return res.status(401).json({ message: 'Invalid or expired OTP' });
+        }
+
+        // Update the user's password (replace with MongoDB update)
+        user.password = await bcrypt.hash(newPassword, 10);
+
+        // Clear the OTP and expiration after successful password reset
+        user.resetToken = undefined;
+        user.resetTokenExpiration = undefined;
+        await user.save();
+
+        res.status(200).json({ message: 'Password reset successfully' });
+    } catch (error) {
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+
+
+
+   // MongoDB connection
 
 
 mongoose
-    .connect('mongodb+srv://naveed65dev:red.78665@cluster0.gr533qq.mongodb.net/')
+    .connect('mongodb+srv://naveed65dev:red.78665@cluster0.gr533qq.mongodb.net/test')
     .then(() => {
         console.log('Connected to MongoDB');
 

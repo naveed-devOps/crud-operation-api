@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
 const userModel = mongoose.Schema({
     name: {
@@ -17,10 +18,9 @@ const userModel = mongoose.Schema({
     email: {
         type: String,
         required: [true, "please enter your email"],
-        unique: true, // Ensure the email is unique in the database
+        unique: true,
         validate: {
             validator: function (value) {
-                // Validate email format using a simple regular expression
                 const emailRegex = /^[a-zA-Z0-9._-]+@[gmail]+\.[com]{2,6}$/;
                 return emailRegex.test(value);
             },
@@ -32,14 +32,14 @@ const userModel = mongoose.Schema({
         required: [true, "please enter your password"],
         validate: {
             validator: function (value) {
-                // Ensure the password meets the specified requirements
-                // At least one symbol, one uppercase letter, one number, and a minimum length of 8 characters
                 const passwordRegex = /^(?=.*[!@#$%^&*])(?=.*[A-Z])(?=.*[0-9]).{8,}$/;
                 return passwordRegex.test(value);
             },
             message: props => `${props.value} does not meet the password requirements!`
         }
-    }
+    },
+    resetToken: String,
+    resetTokenExpiration: Date,
 });
 
 // Hash the password before saving to the database
@@ -49,7 +49,6 @@ userModel.pre('save', async function (next) {
             return next();
         }
 
-        // Ensure the password starts with #
         if (!this.password.startsWith('#')) {
             this.password = '#' + this.password;
         }
@@ -61,6 +60,28 @@ userModel.pre('save', async function (next) {
         next(error);
     }
 });
+
+// Generate a JWT token for authentication
+userModel.methods.generateAuthToken = function () {
+    const token = jwt.sign(
+        { _id: this._id, email: this.email },
+        'your-secret-key',   // Replace with a secure secret key
+        { expiresIn: '1h' }
+    );
+    return token;
+};
+
+  // Generate a reset token for password reset
+userModel.methods.generateResetToken = function () {
+    const resetToken = jwt.sign(
+        { userId: this._id },
+        'your-reset-secret-key', // Replace with a secure reset secret key
+        { expiresIn: '1h' }
+    );
+    this.resetToken = resetToken;
+    this.resetTokenExpiration = Date.now() + 3600000; // Token expires in 1 hour
+    return resetToken;
+};
 
 const User = mongoose.model('user', userModel);
 module.exports = User;
