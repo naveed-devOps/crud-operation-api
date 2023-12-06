@@ -7,7 +7,7 @@ const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
  
 
-app.use(express.json()); 
+app.use(express.json());
  
 
 const transporter = nodemailer.createTransport({
