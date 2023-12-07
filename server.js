@@ -5,7 +5,7 @@ const User = require('./userModel');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');  
 const nodemailer = require('nodemailer');
- 
+ const crypto = require('crypto');
 
 app.use(express.json());
  
@@ -95,6 +95,9 @@ app.get('/users/age/:userAge', async (req, res) => {
 
 app.post('/users', async (req, res) => {
     try {
+//         const secretKey = crypto.randomBytes(32).toString('hex');
+
+// console.log('Generated Secret Key:', secretKey);
         const user = await User.create(req.body);
         res.status(201).json(user);
     } catch (error) {
@@ -260,10 +263,47 @@ app.put('/users/age/:userAge', async (req, res) => {
 });
 
 
-  // Login endpoint
+  // Middleware to verify JWT
+
+  function authenticateToken(req, res, next) {
+    const tokenWithBearer = req.header('Authorization');
+
+    // Check if the token starts with "Bearer " and remove it
+    const token = tokenWithBearer.startsWith('Bearer ') ? tokenWithBearer.slice(7) : tokenWithBearer;
+
+    // Log the token for debugging
+    console.log('Received Token:', token);
+
+    if (!token) {
+        return res.status(401).json({ message: 'Unauthorized: Missing token' });
+    }
+
+    jwt.verify(token, '123', (err, user) => {
+        if (err) {
+            console.error('Token verification error:', err);
+            return res.status(403).json({ message: 'Forbidden: Invalid token' });
+        }
+        req.user = user;
+        next();
+    });
+}
+
+
 
  
-  app.post('/login', async (req, res) => {
+
+ // Example of a protected route using the middleware
+app.get('/protected-route', authenticateToken, (req, res) => {
+    // Access the authenticated user's information through req.user
+    res.status(200).json({ message: 'Access granted', user: req.user });
+});
+
+ 
+  
+  // Login endpoint
+
+
+app.post('/login', async (req, res) => {
     const { email, password } = req.body;
 
     try {
@@ -292,14 +332,20 @@ app.put('/users/age/:userAge', async (req, res) => {
             return res.status(401).json({ message: 'Invalid email or password' });
         }
 
+        // Passwords match, generate a JWT token
+        const token = jwt.sign(
+            { userId: user._id, email: user.email },
+            '123',   // Replace with a secure secret key
+            { expiresIn: '1h' }
+        );
+
         // Passwords match, respond with a success message
-        res.status(200).json({ message: '👏✌️Login successful👏✌️' });
+        res.status(200).json({ message: '👏✌️Login successful👏✌️', token });
     } catch (error) {
         console.error(error); // Log the error to the console
         res.status(500).json({ message: 'Internal server error' });
     }
 });
-
 
 
 
@@ -385,6 +431,8 @@ app.post('/reset-password', async (req, res) => {
         res.status(500).json({ message: 'Internal server error' });
     }
 });
+
+
 
 
 

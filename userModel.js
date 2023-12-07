@@ -69,7 +69,7 @@ userModel.pre('save', async function (next) {
 userModel.methods.generateAuthToken = function () {
     const token = jwt.sign(
         { _id: this._id, email: this.email },
-        'your-secret-key',   // Replace with a secure secret key
+        '123',   // Replace with a secure secret key
         { expiresIn: '1h' }
     );
     return token;
@@ -79,7 +79,7 @@ userModel.methods.generateAuthToken = function () {
 userModel.methods.generateResetToken = function () {
     const resetToken = jwt.sign(
         { userId: this._id },
-        'your-reset-secret-key', // Replace with a secure reset secret key
+        '123', // Replace with a secure reset secret key
         { expiresIn: '1h' }
     );
     this.resetToken = resetToken;
