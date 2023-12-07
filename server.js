@@ -263,7 +263,7 @@ app.put('/users/age/:userAge', async (req, res) => {
   // Login endpoint
 
  
-app.post('/login', async (req, res) => {
+  app.post('/login', async (req, res) => {
     const { email, password } = req.body;
 
     try {
@@ -275,24 +275,32 @@ app.post('/login', async (req, res) => {
             console.log('User not found');
             return res.status(401).json({ message: 'Invalid email or password' });
         }
-        
+
+        // Log stored and provided passwords for debugging
+        console.log('Stored Password:', user.password);
+        console.log('Provided Password:', password);
+
         // Compare the provided password with the hashed password in the database
         const isPasswordMatch = await bcrypt.compare(password, user.password);
+
+        // Log the result of password comparison for debugging
+        console.log('Password Match Result:', isPasswordMatch);
 
         // Check if the passwords match
         if (!isPasswordMatch) {
             console.log('Passwords do not match');
             return res.status(401).json({ message: 'Invalid email or password' });
         }
- 
+
         // Passwords match, respond with a success message
-      //  console.log('Login successful');
         res.status(200).json({ message: '👏✌️Login successful👏✌️' });
     } catch (error) {
         console.error(error); // Log the error to the console
         res.status(500).json({ message: 'Internal server error' });
     }
 });
+
+
 
 
 // Function to generate a random OTP
@@ -305,32 +313,23 @@ function generateOTP() {
     }
     return OTP;
 }
-
  
 // Generate and send OTP to user's email
-
-
 app.post('/generate-otp', async (req, res) => {
     const { email } = req.body;
-
     try {
         const user = await User.findOne({ email });
-
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
-
         // Generate OTP
         const otp = generateOTP();
-
         // Store OTP and its expiration time in the user document
         user.resetToken = otp;
         user.resetTokenExpiration = Date.now() + 600000; // OTP expires in 10 minutes
         await user.save();
-
         // Log the generated OTP (for debugging purposes)
         console.log('Generated OTP:', otp);
-
         // Send OTP to user's email
         const mailOptions = {
             from: 'naveed65dev@gmail.com',
@@ -338,7 +337,6 @@ app.post('/generate-otp', async (req, res) => {
             subject: 'Reset Password OTP',
             text: `Your OTP for password reset is: ${otp}. It will expire in 10 minutes.`,
         };
-
         transporter.sendMail(mailOptions, (error, info) => {
             if (error) {
                 console.error('Error sending email:', error);
@@ -354,7 +352,6 @@ app.post('/generate-otp', async (req, res) => {
         res.status(500).json({ message: 'Internal server error' });
     }
 });
-
 
 
   // Reset password using OTP
@@ -376,7 +373,7 @@ app.post('/reset-password', async (req, res) => {
         }
 
         // Update the user's password (replace with MongoDB update)
-        user.password = await bcrypt.hash(newPassword, 10);
+        user.password = newPassword;
 
         // Clear the OTP and expiration after successful password reset
         user.resetToken = undefined;
