@@ -9,10 +9,12 @@ const userModel = mongoose.Schema({
     },
     age: {
         type: Number,
-        required: [true, "please enter your age"]
+        required: [true, "please enter your age"],
+        unique: false,
     },
     id: {
         type: Number,
+        unique: true,
         required: [true, "please enter your id"]
     },
     email: {
@@ -32,6 +34,7 @@ const userModel = mongoose.Schema({
         required: [true, "please enter your password"],
         validate: {
             validator: function (value) {
+                // Adjust the password complexity requirements as needed
                 const passwordRegex = /^(?=.*[!@#$%^&*])(?=.*[A-Z])(?=.*[0-9]).{8,}$/;
                 return passwordRegex.test(value);
             },
@@ -49,6 +52,7 @@ userModel.pre('save', async function (next) {
             return next();
         }
 
+        // Prefix the password with '#' if it doesn't start with it
         if (!this.password.startsWith('#')) {
             this.password = '#' + this.password;
         }
@@ -71,7 +75,7 @@ userModel.methods.generateAuthToken = function () {
     return token;
 };
 
-  // Generate a reset token for password reset
+// Generate a reset token for password reset
 userModel.methods.generateResetToken = function () {
     const resetToken = jwt.sign(
         { userId: this._id },
